@@ -1,0 +1,214 @@
+<html>
+
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-blue-600 to-orange-400 text-white p-4 rounded-lg shadow mb-6">
+    <h1 class="text-2xl font-bold">📋 Prepedido - Estimación de Materiales</h1>
+  </div>
+
+  <!-- Filtros -->
+  <div class="grid grid-cols-3 gap-4 mb-6">
+    <div>
+      <label class="text-sm font-medium">Proyecto</label>
+      <select class="w-full border rounded-md p-2" id="select-proyects">
+        <option value="noValue">Seleccionar opción</option>
+        <!-- <option>Estructura Principal</option> -->
+      </select>
+    </div>
+    <div>
+      <label class="text-sm font-medium">Trabajo</label>
+      <select class="w-full border rounded-md p-2" id="select-trabajos">
+        <option value="noValue">Seleccionar opción</option>
+        <!-- <option>Estructura Principal</option> -->
+      </select>
+    </div>
+    <div>
+      <label class="text-sm font-medium">Actividad Nivel 4</label>
+      <select class="w-full border rounded-md p-2" id="select-nivel4">
+        <option value="noValue">Seleccionar opción</option>
+        <!-- <option>Cimentación</option> -->
+      </select>
+    </div>
+  </div>
+
+  <!-- Acordeón Nivel 5 -->
+  <div class="bg-white rounded-2xl shadow-md mb-4" id="section-niveles"></div>
+
+  <!-- Materiales -->
+  <!-- <div class="p-4">
+    <div class="mb-4">
+      <button
+        class="justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="lucide lucide-plus" data-lov-id="src/components/HierarchicalEstimation.tsx:829:50" data-lov-name="Plus"
+          data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="829"
+          data-component-file="HierarchicalEstimation.tsx" data-component-name="Plus" data-component-content="%7B%7D">
+          <path d="M5 12h14"></path>
+          <path d="M12 5v14"></path>
+        </svg>
+        Agregar Material
+      </button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <thead data-lov-id="src/components/HierarchicalEstimation.tsx:872:48" data-lov-name="thead"
+          data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="872"
+          data-component-file="HierarchicalEstimation.tsx" data-component-name="thead" data-component-content="%7B%7D">
+          <tr data-lov-id="src/components/HierarchicalEstimation.tsx:873:51" data-lov-name="tr"
+            data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="873"
+            data-component-file="HierarchicalEstimation.tsx" data-component-name="tr"
+            data-component-content="%7B%22className%22%3A%22bg-gray-50%22%7D" class="bg-gray-50">
+            <th data-lov-id="src/components/HierarchicalEstimation.tsx:874:53" data-lov-name="th"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="874"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="th"
+              data-component-content="%7B%22text%22%3A%22MATERIAL%22%2C%22className%22%3A%22border%20p-2%20text-left%20text-xs%20font-medium%20text-gray-700%22%7D"
+              class="border p-2 text-left text-xs font-medium text-gray-700">MATERIAL</th>
+            <th data-lov-id="src/components/HierarchicalEstimation.tsx:875:53" data-lov-name="th"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="875"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="th"
+              data-component-content="%7B%22text%22%3A%22UNIDAD%22%2C%22className%22%3A%22border%20p-2%20text-left%20text-xs%20font-medium%20text-gray-700%22%7D"
+              class="border p-2 text-left text-xs font-medium text-gray-700">UNIDAD</th>
+            <th data-lov-id="src/components/HierarchicalEstimation.tsx:876:53" data-lov-name="th"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="876"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="th"
+              data-component-content="%7B%22text%22%3A%22CANT.%20PRESUP.%22%2C%22className%22%3A%22border%20p-2%20text-left%20text-xs%20font-medium%20text-gray-700%22%7D"
+              class="border p-2 text-left text-xs font-medium text-gray-700">CANT. PRESUP.</th>
+            <th data-lov-id="src/components/HierarchicalEstimation.tsx:877:53" data-lov-name="th"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="877"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="th"
+              data-component-content="%7B%22text%22%3A%22VALOR%20UNIT.%22%2C%22className%22%3A%22border%20p-2%20text-left%20text-xs%20font-medium%20text-gray-700%22%7D"
+              class="border p-2 text-left text-xs font-medium text-gray-700">VALOR UNIT.</th>
+            <th data-lov-id="src/components/HierarchicalEstimation.tsx:878:53" data-lov-name="th"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="878"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="th"
+              data-component-content="%7B%22text%22%3A%22CANT.%20A%20PEDIR%22%2C%22className%22%3A%22border%20p-2%20text-left%20text-xs%20font-medium%20text-gray-700%22%7D"
+              class="border p-2 text-left text-xs font-medium text-gray-700">CANT. A PEDIR</th>
+            <th data-lov-id="src/components/HierarchicalEstimation.tsx:879:53" data-lov-name="th"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="879"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="th"
+              data-component-content="%7B%22text%22%3A%22TOTAL%22%2C%22className%22%3A%22border%20p-2%20text-left%20text-xs%20font-medium%20text-gray-700%22%7D"
+              class="border p-2 text-left text-xs font-medium text-gray-700">TOTAL</th>
+            <th data-lov-id="src/components/HierarchicalEstimation.tsx:880:53" data-lov-name="th"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="880"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="th"
+              data-component-content="%7B%22text%22%3A%22ESTADO%22%2C%22className%22%3A%22border%20p-2%20text-left%20text-xs%20font-medium%20text-gray-700%22%7D"
+              class="border p-2 text-left text-xs font-medium text-gray-700">ESTADO</th>
+            <th data-lov-id="src/components/HierarchicalEstimation.tsx:881:53" data-lov-name="th"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="881"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="th"
+              data-component-content="%7B%22text%22%3A%22ACCIONES%22%2C%22className%22%3A%22border%20p-2%20text-left%20text-xs%20font-medium%20text-gray-700%22%7D"
+              class="border p-2 text-left text-xs font-medium text-gray-700">ACCIONES</th>
+            <th data-lov-id="src/components/HierarchicalEstimation.tsx:882:53" data-lov-name="th"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="882"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="th"
+              data-component-content="%7B%22text%22%3A%22COMENTARIOS%22%2C%22className%22%3A%22border%20p-2%20text-left%20text-xs%20font-medium%20text-gray-700%22%7D"
+              class="border p-2 text-left text-xs font-medium text-gray-700">COMENTARIOS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-lov-id="src/components/HierarchicalEstimation.tsx:893:55" data-lov-name="tr"
+            data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="893"
+            data-component-file="HierarchicalEstimation.tsx" data-component-name="tr"
+            data-component-content="%7B%22className%22%3A%22hover%3Abg-gray-50%22%7D" class="hover:bg-gray-50">
+            <td data-lov-id="src/components/HierarchicalEstimation.tsx:894:57" data-lov-name="td"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="894"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="td"
+              data-component-content="%7B%22className%22%3A%22border%20p-2%22%7D" class="border p-2">
+              <div data-lov-id="src/components/HierarchicalEstimation.tsx:895:59" data-lov-name="div"
+                data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="895"
+                data-component-file="HierarchicalEstimation.tsx" data-component-name="div"
+                data-component-content="%7B%7D">
+                <div data-lov-id="src/components/HierarchicalEstimation.tsx:896:62" data-lov-name="div"
+                  data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="896"
+                  data-component-file="HierarchicalEstimation.tsx" data-component-name="div"
+                  data-component-content="%7B%22text%22%3A%22-%22%7D" class="font-medium text-xs text-blue-600">191021 -
+                  CONCRETO 2000 3/4"</div>
+              </div>
+            </td>
+            <td data-lov-id="src/components/HierarchicalEstimation.tsx:905:57" data-lov-name="td"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="905"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="td"
+              data-component-content="%7B%22className%22%3A%22border%20p-2%20text-center%20text-xs%22%7D"
+              class="border p-2 text-center text-xs">M3</td>
+            <td data-lov-id="src/components/HierarchicalEstimation.tsx:906:57" data-lov-name="td"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="906"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="td"
+              data-component-content="%7B%22className%22%3A%22border%20p-2%20text-center%20text-xs%22%7D"
+              class="border p-2 text-center text-xs">41.13</td>
+            <td data-lov-id="src/components/HierarchicalEstimation.tsx:907:57" data-lov-name="td"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="907"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="td"
+              data-component-content="%7B%22className%22%3A%22border%20p-2%20text-center%20text-xs%22%7D"
+              class="border p-2 text-center text-xs">$350.210</td>
+            <td data-lov-id="src/components/HierarchicalEstimation.tsx:908:58" data-lov-name="td"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="908"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="td"
+              data-component-content="%7B%22className%22%3A%22border%20p-2%20text-center%22%7D"
+              class="border p-2 text-center"><input data-lov-id="src/components/HierarchicalEstimation.tsx:909:60"
+                data-lov-name="Input" data-component-path="src/components/HierarchicalEstimation.tsx"
+                data-component-line="909" data-component-file="HierarchicalEstimation.tsx" data-component-name="Input"
+                data-component-content="%7B%22className%22%3A%22w-24%20text-center%20text-%5B9px%5D%22%7D" type="number"
+                class="flex h-10 rounded-md border border-input bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm w-24 text-center text-[9px]"
+                step="0.01" value="41.13"></td>
+            <td data-lov-id="src/components/HierarchicalEstimation.tsx:920:57" data-lov-name="td"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="920"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="td"
+              data-component-content="%7B%22className%22%3A%22border%20p-2%20text-center%20font-semibold%20text-blue-600%20text-xs%22%7D"
+              class="border p-2 text-center font-semibold text-blue-600 text-xs">$14.403.262</td>
+            <td data-lov-id="src/components/HierarchicalEstimation.tsx:923:57" data-lov-name="td"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="923"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="td"
+              data-component-content="%7B%22className%22%3A%22border%20p-2%20text-center%22%7D"
+              class="border p-2 text-center">
+              <div data-lov-id="src/components/HierarchicalEstimation.tsx:535:6" data-lov-name="Badge"
+                data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="535"
+                data-component-file="HierarchicalEstimation.tsx" data-component-name="Badge"
+                data-component-content="%7B%7D"
+                class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80"
+                style="background-color: rgb(251, 191, 36); color: rgb(0, 0, 0);">Elaborado</div>
+            </td>
+            <td data-lov-id="src/components/HierarchicalEstimation.tsx:926:57" data-lov-name="td"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="926"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="td"
+              data-component-content="%7B%22className%22%3A%22border%20p-2%20text-center%22%7D"
+              class="border p-2 text-center"><button data-lov-id="src/components/HierarchicalEstimation.tsx:928:62"
+                data-lov-name="Button" data-component-path="src/components/HierarchicalEstimation.tsx"
+                data-component-line="928" data-component-file="HierarchicalEstimation.tsx" data-component-name="Button"
+                data-component-content="%7B%22text%22%3A%22Sustituir%22%2C%22className%22%3A%22text-xs%20px-2%20py-1%22%7D"
+                class="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 rounded-md text-xs px-2 py-1">Sustituir</button>
+            </td>
+            <td data-lov-id="src/components/HierarchicalEstimation.tsx:942:57" data-lov-name="td"
+              data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="942"
+              data-component-file="HierarchicalEstimation.tsx" data-component-name="td"
+              data-component-content="%7B%22className%22%3A%22border%20p-2%20text-center%22%7D"
+              class="border p-2 text-center"><input data-lov-id="src/components/HierarchicalEstimation.tsx:943:60"
+                data-lov-name="Input" data-component-path="src/components/HierarchicalEstimation.tsx"
+                data-component-line="943" data-component-file="HierarchicalEstimation.tsx" data-component-name="Input"
+                data-component-content="%7B%7D" type="text"
+                class="flex h-10 rounded-md border border-input bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm w-24 text-xs"
+                placeholder="Comentario..." value=""></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div> -->
+
+  <!-- Modal -->
+  <!-- <button id="openDialog">Agregar Material</button>
+
+  <dialog id="myDialog">
+    <button id="closeDialog">Cerrar</button>
+    <h2>Agregar material</h2>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum a, nam architecto consectetur amet deserunt voluptatem minima nihil aperiam suscipit magnam veniam, labore, molestiae accusantium facere quae ipsum quod distinctio.</p>
+  </dialog> -->
+
+  <script src="./assets/js/index.js"></script>
+</body>
+
+</html>
