@@ -29,19 +29,9 @@ document.querySelectorAll('.subaccordion-btn').forEach(btn => {
 
 const handleModal = (idDialog, openDialog, closeDialog) => {
 
-  console.log("hola")
-
   const dialog = document.getElementById(idDialog)
   const openButton = document.getElementById(openDialog)
   const closeButton = document.getElementById(closeDialog)
-
-  // openButton.addEventListener("click", () => {
-  //   dialog.showModal()
-  // })
-
-  // closeButton.addEventListener("click", () => {
-  //   dialog.close()
-  // })
 
   dialog.showModal();
 
@@ -141,7 +131,7 @@ const obtenerIdPresupuesto = async (idProyecto, idTrabajo, idNivel4) => {
   }
 }
 
-const obtenerMateriales = async (idPresupuesto) => {
+const obtenerMaterialesAsociados = async (idPresupuesto) => {
   const config = {
     app_name: "inventory-1-0",       // tu aplicación
     report_name: "MATERIALES_ACTIVIDADES_PRESUPUESTOS_Report", // tu reporte
@@ -190,14 +180,41 @@ const eliminarValoresDuplicados = (data, key, getText, valueField, selectId) => 
   });
 };
 
+const obtenerMateriales = async(idFamilia) => {
+  const config = {
+    app_name: "bodega-tabla",       // tu aplicación
+    report_name: "MATERIALES_Report" // tu reporte
+  };
+
+  // criteria: `id_familia == ${idFamilia}`
+
+  try {
+    console.log(idFamilia)
+    const response = await ZOHO.CREATOR.DATA.getRecords(config)
+    return response.data
+
+  } catch (error) {
+    return error
+  }
+}
+
+const guardarMateriales = async (idFamilia, object) => {
+  object = await obtenerMateriales(idFamilia)
+}
+
 (async () => {
 
   const proyectos = await obtenerProyectosPorUsuario();
+
   let trabajos = []
   let nivel_4 = []
   let nivel_5 = []
   let idPresupuesto = ""
+  let materialesAsociados = []
+
   let materiales = []
+
+  materiales = await obtenerMateriales();
 
   const parametros = {
     "proyecto": "",
@@ -249,13 +266,10 @@ const eliminarValoresDuplicados = (data, key, getText, valueField, selectId) => 
     let html = ""
 
     if (nivel_5.length > 0) {
-      console.log(nivel_5)
 
       idPresupuesto = await obtenerIdPresupuesto(parametros.proyecto, parametros.trabajo, parametros.nivel_4)
 
-      materiales = await obtenerMateriales(idPresupuesto)
-
-      console.log(materiales)
+      materialesAsociados = await obtenerMaterialesAsociados(idPresupuesto)
 
       // Agrupar por ID de NIVEL_5
       const grupos = {}
@@ -290,7 +304,7 @@ const eliminarValoresDuplicados = (data, key, getText, valueField, selectId) => 
 
         grupos[NIVEL_5.ID].niveles8[NIVEL_8.ID].familias[FAMILIA.ID]
 
-        materiales.forEach(({ Materiales, Unitario, Unidades_Totales, Cant_unitaria, Total, Precio, UDM, ID }) => {
+        materialesAsociados.forEach(({ Materiales, Unitario, Unidades_Totales, Cant_unitaria, Total, Precio, UDM, ID }) => {
 
           if (vincularMaterial(Materiales.codigo_material, FAMILIA.Codigo_Familia)) {
             grupos[NIVEL_5.ID].niveles8[NIVEL_8.ID].familias[FAMILIA.ID].materiales.push({
@@ -378,8 +392,20 @@ const eliminarValoresDuplicados = (data, key, getText, valueField, selectId) => 
                         </div>
 
                         <div class="mb-4">
-                          <select class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1" name="" id="">
-                            <option value="">X1</option>
+                          <select class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1" name="" id="" >
+                             ${
+      (() => {
+        const materialesFiltrado = materiales.filter(({ id_familia }) => id_familia.Codigo_Familia === el.Codigo_Familia)
+        console.log(materialesFiltrado)
+        if (materialesFiltrado.length > 0) {
+          return materialesFiltrado
+            .map(({ nombre_material, ID }) => `<option value="${ID}">${nombre_material}</option>`)
+            .join("")
+        } else {
+          return `<option disabled>No existen materiales para esta familia</option>`
+        }
+      })()
+    }
                           </select>
                         </div>
 
