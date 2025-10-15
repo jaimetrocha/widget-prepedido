@@ -148,6 +148,54 @@ const obtenerMaterialesAsociados = async (idPresupuesto) => {
   }
 }
 
+const obtenerMateriales = async (idFamilia) => {
+  const config = {
+    app_name: "bodega-tabla",       // tu aplicación
+    report_name: "MATERIALES_Report", // tu reporte
+    // criteria: `id_familia == 4236940000113997139`
+    criteria: `id_familia == ${idFamilia}`
+  };
+
+  try {
+    const response = await ZOHO.CREATOR.DATA.getRecords(config)
+    return response.data
+
+  } catch (error) {
+    return error
+  }
+}
+
+const crearDetallePresupuesto = async (idPresupuesto, idNivel5, idNivel8, idMaterial) => {
+
+  const payload = {
+    "data": {
+      "Presupuesto_Material": idPresupuesto,
+      "Nivel_5": idNivel5,
+      "Nivel_8": idNivel8,
+      "Materiales": idMaterial
+    }
+  }
+
+  console.log(payload)
+
+  const config = {
+    app_name: "inventory-1-0",
+    form_name: "MATERIALES_ACTIVIDADES_PRESUPUESTOS", 
+    payload: payload
+  };
+
+  try {
+    const response = await ZOHO.CREATOR.DATA.addRecords(config)
+    console.log(response)
+    return response
+  } catch (error) {
+    return error
+  }
+
+}
+
+// Funcionalidades app
+
 const vincularMaterial = (codigoMaterial, codigoFamilia) => {
   return codigoMaterial.startsWith(codigoFamilia)
 }
@@ -180,29 +228,6 @@ const eliminarValoresDuplicados = (data, key, getText, valueField, selectId) => 
   });
 };
 
-const obtenerMateriales = async (idFamilia) => {
-  const config = {
-    app_name: "bodega-tabla",       // tu aplicación
-    report_name: "MATERIALES_Report", // tu reporte
-    // criteria: `id_familia == 4236940000113997139`
-    criteria: `id_familia == ${idFamilia}`
-  };
-
-  try {
-    console.log(idFamilia)
-    const response = await ZOHO.CREATOR.DATA.getRecords(config)
-    console.log(response.data)
-    return response.data
-
-  } catch (error) {
-    return error
-  }
-}
-
-const guardarMateriales = async (idFamilia, object) => {
-  object = await obtenerMateriales(idFamilia)
-}
-
 // Renderizar materiales en las listas
 
 const renderizarMateriales = async (idFamilia, selectId) => {
@@ -213,66 +238,110 @@ const renderizarMateriales = async (idFamilia, selectId) => {
   select.innerHTML = "";
 
   if(materiales.length > 0){
+    const defaultOption = new Option("Seleccione un articulo", "novalue")
+    defaultOption.disabled = true
+    defaultOption.selected = true
+    select.add( defaultOption )
     materiales.forEach(({nombre_material, ID,codigo_material})=>{
       select.add(new Option(`${codigo_material}-${nombre_material}`, ID))
     })
   }else{
-    const noDataOption = new Option("No existen materiales para esta familia", "noValue")
-    noDataOption.disabled = true
-    noDataOption.selected = true
-    select.add(noDataOption);
+    const defaultOption = new Option("No existen materiales para esta familia", "noValue")
+    defaultOption.disabled = true
+    defaultOption.selected = true
+    select.add(defaultOption);
   }
 
 }
 
+let materialesAsociadosFamilia = []
+
+let data = []
+
+/**
+ * @param {string} idFamilia - ID de la familia para la busqueda en Creator.
+ * @param {string} selectId - ID del <select/> para el renderizado de los materiales como opciones.
+ */
+const almacenarMateriales = async (idFamilia, selectId) => {
+  materialesAsociadosFamilia = await obtenerMateriales(idFamilia)
+  renderizarMateriales(idFamilia, selectId)
+}
+
+const handleSelect = (selectId) => {
+  const select = document.getElementById(selectId).value
+  return select
+}
+
 // Acciones botón
 
-const agregarMaterial = async(grupos = {}, idNivel5, idNivel8, idFamilia, material, selectId, closeDialog) =>{
+const agregarMaterial = async(grupos = {}, idNivel5, idNivel8, idFamilia, tableId, selectMaterialesId, idPresupuesto) =>{
+
+  const idMaterial = handleSelect(selectMaterialesId)
+
+  const dataMaterial = materialesAsociadosFamilia.filter(el => el.ID == idMaterial)
+
+  // console.log(dataMaterial)
   
   const objectFamilia = grupos[idNivel5]["niveles8"][idNivel8]["familias"]
   const objectMateriales = objectFamilia[idFamilia]["materiales"]
 
-  // objectMateriales.push(data)
+  objectMateriales.push(dataMaterial[0])
 
-  const select = document.querySelector(selectId);
+  const select = document.querySelector(tableId);
+
+  dataMaterial.forEach( ({codigo_material, nombre_material, UDM, Cant_unitaria, Unitario, Total}) => {
 
   const tr = document.createElement("tr")
   tr.classList.add("hover:bg-gray-50")
 
   // MATERIALES
   const tdNombreMaterial = document.createElement("td")
-  tdNombreMaterial.textContent = "nuevo material..."
+  tdNombreMaterial.textContent = codigo_material + "-" + nombre_material
   tdNombreMaterial.classList.add("border", "p-2")
   tr.appendChild(tdNombreMaterial)
   
   // UNIDAD
   const tdUnidad = document.createElement("td")
-  tdUnidad.textContent = ""
+  tdUnidad.textContent = UDM.codigo_udm
   tdUnidad.classList.add("border", "p-2", "text-center", "text-xs")
   tr.appendChild(tdUnidad)
 
   // CANT. PRESUP.
   const tdCantidadPresup = document.createElement("td")
-  tdCantidadPresup.textContent = ""
-  tdCantidadPresup.classList.add("border", "p-2")
+  tdCantidadPresup.textContent = Cant_unitaria || 0
+  tdCantidadPresup.classList.add("border", "p-2", "text-center", "text-xs")
   tr.appendChild(tdCantidadPresup)
 
   // VALOR UNIT.
   const tdValorUnitario = document.createElement("td")
-  tdValorUnitario.textContent = ""
-  tdValorUnitario.classList.add("border", "p-2")
+  tdValorUnitario.textContent = Unitario || 0
+  tdValorUnitario.classList.add("border", "p-2", "text-center", "text-xs")
   tr.appendChild(tdValorUnitario)
 
   // CANT. A PEDIR
   const tdCantidadAPedir = document.createElement("td")
   tdCantidadAPedir.textContent = ""
-  tdCantidadAPedir.classList.add("border", "p-2")
+  tdCantidadAPedir.classList.add("border", "p-2", "text-center")
   tr.appendChild(tdCantidadAPedir)
+
+  const input = document.createElement("input")
+  input.type = "number"
+  input.value = Cant_unitaria !== "" ? Cant_unitaria : 0;
+  input.className = `
+  flex h-10 rounded-md border border-input bg-background px-3 py-2 
+  ring-offset-background file:border-0 file:bg-transparent file:text-sm 
+  file:font-medium file:text-foreground placeholder:text-muted-foreground 
+  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 
+  focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 
+  md:text-sm w-24 text-center text-[9px]
+  `
+
+  tdCantidadAPedir.appendChild(input);
 
   // TOTAL
   const tdTotal = document.createElement("td")
-  tdTotal.textContent = ""
-  tdTotal.classList.add("border", "p-2")
+  tdTotal.textContent = Total || 0
+  tdTotal.classList.add("border", "p-2", "text-center", "font-semibold", "text-blue-600", "text-xs")
   tr.appendChild(tdTotal)
 
   // ESTADO
@@ -294,6 +363,14 @@ const agregarMaterial = async(grupos = {}, idNivel5, idNivel8, idFamilia, materi
   tr.appendChild(tdComentarios)
 
   select.appendChild(tr)
+
+  })
+
+  // crearDetallePresupuesto(idPresupuesto, idNivel5, idNivel8, idMaterial)
+
+}
+
+const guardarData = async() => {
 
 }
 
@@ -415,101 +492,6 @@ const agregarMaterial = async(grupos = {}, idNivel5, idNivel8, idFamilia, materi
 
       console.log(grupos)
 
-      const materialTest = {
-        "IMAGEN_MATERIAL": "",
-        "cantidad_por_paquete": "1.00",
-        "fondo": "",
-        "Niveles_precios_compra": {
-          "nombre_nivel_precio_compra": "2-Proveedor/art/nivel de suc",
-          "ID": "4236940000098953281",
-          "zc_display_value": "2-Proveedor/art/nivel de suc"
-        },
-        "VOLUMEN": "",
-        "CLASIFICACION_LM": {
-          "nombre_clasificacion_lm": "IN20-Inven. Pto Propio y Licitación",
-          "ID": "4236940000097444003",
-          "zc_display_value": "IN20-Inven. Pto Propio y Licitación"
-        },
-        "Tipo_material": {
-          "nombre_tipo_material": "Equipos especiales",
-          "ID": "4236940000114739246",
-          "zc_display_value": "Equipos especiales"
-        },
-        "alto": "2.36",
-        "ESTADO_MATERIAL": "APROBADO",
-        "tipo_paquete": {
-          "nombre_tipo_paquete": "Unidad",
-          "ID": "4236940000097441087",
-          "zc_display_value": "Unidad"
-        },
-        "diametro_pulgadas": "",
-        "precio": "",
-        "iva": "19",
-        "TIPO_DE_L_NEA1": "S-Stock Inventory Item",
-        "MANEJA_VENCIMIENTO": "false",
-        "ancho": "1.60",
-        "diametro_detalle": "",
-        "Added_User": "marval",
-        "FICHAS_TECNICAS": [],
-        "Estado_lote1": {
-          "nombre_estado_lote": "Aprobado",
-          "ID": "4236940000097443019",
-          "zc_display_value": "Aprobado"
-        },
-        "ID": "4236940000117005615",
-        "nombre_material": "JAULA FUNC DE POTENCIA GSX JFP",
-        "sku": "211063",
-        "PRECIOS_MATERIALES": [],
-        "Regla_costos_adic": {
-          "codigo_costos_adicionales": "MAT",
-          "ID": "4236940000098953289",
-          "zc_display_value": "MAT"
-        },
-        "UDM": {
-          "codigo_udm": "UN",
-          "ID": "4236940000097446051",
-          "zc_display_value": "UN"
-        },
-        "Added_Time": "30-Jul-2025 14:48:46",
-        "Modified_Time": "16-Sep-2025 09:50:28",
-        "peso": "150.00",
-        "codigo_material": "211063",
-        "Niveles_precios_venta": {
-          "nombre_nivel_precio_venta": "2-Sólo artículo sucursal",
-          "ID": "4236940000098953277",
-          "zc_display_value": "2-Sólo artículo sucursal"
-        },
-        "Estado_JDE": "",
-        "Descripci_n_2": "",
-        "Fam_planf_maestra1": {
-          "codigo_fam_planf_maestra": "OBR",
-          "ID": "4236940000098953285",
-          "zc_display_value": "OBR"
-        },
-        "COMPRAS_GRAVABLES": "Y-Lín sujeta a imptos aplicables",
-        "IND_PROD_GR_EMP": "P-Artículo empacado",
-        "consecutivo": "",
-        "NIveles_costos_inventarios1": {
-          "ID": "4236940000098953273",
-          "zc_display_value": "2-Sólo artículo sucursal",
-          "nombre_nivel_costo_inv": "2-Sólo artículo sucursal"
-        },
-        "M_T_DE_COMPROMISOS": "1-Ubicación con mayor cantidad",
-        "id_familia": {
-          "Nombre_Familia": "EQUIPOS ESPECIALES",
-          "Codigo_Familia": "21",
-          "ID": "4236940000113997139",
-          "zc_display_value": "21 - EQUIPOS ESPECIALES"
-        },
-        "VENTAS_GRAVABLES": "Y-Lín sujeta a imptos aplicables",
-        "Verificado_por_compras": "true",
-        "tipo_almacen": {
-          "ID": "4236940000097442011",
-          "nombre_tipo_almacen": "P-Compras materia prima",
-          "zc_display_value": "P-Compras materia prima"
-        }
-      }
-
       Object.values(grupos).forEach((grupo) => {
         html += `
       <div class="bg-white rounded-lg shadow border">
@@ -535,7 +517,7 @@ const agregarMaterial = async(grupos = {}, idNivel5, idNivel8, idFamilia, materi
                   <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold bg-gray-200 text-sm">NIVEL 8</span>
                   <span class="font-medium text-sm ml-2">${n8.codigo_nivel_8}-${n8.nombre_nivel_8}</span>
                   <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-primary/80 bg-blue-500 text-white border-blue-500 text-sm">
-                    APTOS: ${grupo.cantidadTotal}
+                    UNID: ${grupo.cantidadTotal}
                   </span>
                 </div>
               </button>
@@ -551,7 +533,7 @@ const agregarMaterial = async(grupos = {}, idNivel5, idNivel8, idFamilia, materi
                         </div>
                         <span class="font-medium text-xs">${el.Codigo_Familia}-${el.Nombre_Familia}</span>
                         <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:bg-primary/80 bg-blue-500 text-white border-blue-500 text-sm">
-                          APTOS: ${grupo.cantidadTotal}
+                          UNID: ${grupo.cantidadTotal}
                         </span>
                       </div>
                     </button>
@@ -562,7 +544,7 @@ const agregarMaterial = async(grupos = {}, idNivel5, idNivel8, idFamilia, materi
                       <!-- Botón Agregar Material -->
                         <button id="openDialog-agregar-material-${el.Codigo_Familia}" class="justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 flex items-center gap-2"
                         
-                        onclick= " handleModal('dialog-agregar-material-${el.Codigo_Familia}', 'openDialog-agregar-material-${el.Codigo_Familia}', 'closeDialog-agregar-material-${el.Codigo_Familia}' ); renderizarMateriales('${el.ID}', 'select-agregar-materiales-${el.Codigo_Familia}') "
+                        onclick= " handleModal('dialog-agregar-material-${el.Codigo_Familia}', 'openDialog-agregar-material-${el.Codigo_Familia}', 'closeDialog-agregar-material-${el.Codigo_Familia}' ); almacenarMateriales('${el.ID}', 'select-agregar-materiales-${el.Codigo_Familia}') "
 
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus" data-lov-id="src/components/HierarchicalEstimation.tsx:829:50" data-lov-name="Plus" data-component-path="src/components/HierarchicalEstimation.tsx" data-component-line="829" data-component-file="HierarchicalEstimation.tsx" data-component-name="Plus" data-component-content="%7B%7D"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
@@ -577,13 +559,13 @@ const agregarMaterial = async(grupos = {}, idNivel5, idNivel8, idFamilia, materi
                         </div>
 
                         <div class="mb-4">
-                          <select class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1" name="" id="select-agregar-materiales-${el.Codigo_Familia}" >
+                          <select class="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1" name="" id="select-agregar-materiales-${el.Codigo_Familia}" 
+                          >
                               
                           </select>
                           <button class="mt-4 inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-blue-500 text-primary-foreground h-10 px-4 py-2 w-full text-white"
                           
-                          onclick = 'agregarMaterial( ${JSON.stringify(grupos)}, "${grupo.ID}", "${n8.ID}", "${el.ID}", ${JSON.stringify(materialTest)}, "#table-${el.ID} tbody") '
-                          
+                          onclick = 'agregarMaterial( ${JSON.stringify(grupos)}, "${grupo.ID}", "${n8.ID}", "${el.ID}", "#table-${el.ID} tbody", "select-agregar-materiales-${el.Codigo_Familia}", "${idPresupuesto}");handleModal("dialog-agregar-material-${el.Codigo_Familia}", "openDialog-agregar-material-${el.Codigo_Familia}", "closeDialog-agregar-material-${el.Codigo_Familia}" ) '
                           >Agregar</button>
                         </div>
 
@@ -615,15 +597,14 @@ const agregarMaterial = async(grupos = {}, idNivel5, idNivel8, idFamilia, materi
                             </thead>
                             <tbody>
                                 ${el.materiales.map((material) => `
-
                                     <tr class="hover:bg-gray-50">
         <td class="border p-2">${material.codigo_material}-${material.nombre_material}</td>
-        <td class="border p-2 text-center text-xs">${material.UDM.codigo_udm}</td>
+        <td class="border p-2 text-center text-xs">${material.UDM.codigo_udm !== undefined ? material.UDM.codigo_udm : ""}</td>
         <td class="border p-2 text-center text-xs">${material.Cant_unitaria}</td>
         <td class="border p-2 text-center text-xs">$${material.Unitario}</td>
         <td class="border p-2 text-center">
           <!-- CANT. A PEDIR -->
-          <input value=${material.Cant_unitaria} type="number" class="flex h-10 rounded-md border border-input bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm w-24 text-center text-[9px]"></input>
+          <input value=${material.Cant_unitaria !== ""  ? material.Cant_unitaria : 0 } type="number" class="flex h-10 rounded-md border border-input bg-background px-3 py-2 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm w-24 text-center text-[9px]"></input>
         </td>
         <td class="border p-2 text-center font-semibold text-blue-600 text-xs">$${material.Total}</td>
         <td class="border p-2 text-center">
@@ -694,11 +675,17 @@ onclick= " handleModal('dialog-sustituir-material-${material.codigo_material}', 
       acordeonPrincipal(".subaccordion-btn")
       acordeonPrincipal(".subaccordion-familia-btn")
 
-      // Modales
-      // document.getElementById("openDialog-agregar-material").addEventListener("click", () =>{
-      //   console.log("Modal...")
-      //   handleModal("dialog-agregar-material", "openDialog-agregar-material", "closeDialog-agregar-material")
-      // })
+      document.getElementById("section-footer").innerHTML += `
+      
+      <div class="mt-8 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
+        <div class="flex justify-between items-center">
+          <h2 class="text-xl font-bold">TOTAL</h2>
+        </div>
+        <div>
+
+        </div>
+      </div>
+      `
 
     }
   })
